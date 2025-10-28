@@ -15,9 +15,22 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.trace import get_tracer_provider, set_tracer_provider
 
 class Logger:
-    def __init__(self, name=None, level=logging.INFO):
+    def __init__(self, name=None, level=logging.INFO, id : int = None):
+        """
+        Custom logging wrapper around Python's standard logging.Logger.
+
+        Attributes:
+            name (str): Unique name for this logger instance.
+            logger (logging.Logger): The actual logger object.
+        
+        Args:
+            name (str, optional): Base name of the logger. Defaults to the class name.
+            level (int, optional): Logging level (DEBUG, INFO, etc.). Defaults to logging.INFO.
+            id (int, optional): Optional unique identifier appended to the logger name.
+        """
         # Use a stable unique logger name — avoids collisions
-        self.name = f"{name}.{id(self)}" or f"{__name__}.{self.__class__.__name__}"
+        base = name or self.__class__.__name__
+        self.name = f"{base}{f'.{id}' if id is not None else ''}"        
         self.logger = logging.getLogger(self.name)
         self.logger.setLevel(level)
 
@@ -43,7 +56,22 @@ class Logger:
 
 class RAGMetrics :
     def __init__(self, log_level=logging.INFO):
-        self.logger = Logger(name="metrics", level=log_level)
+        """
+        Metrics and tracing manager for a RAG (Retrieval-Augmented Generation) pipeline.
+
+        Attributes:
+            logger (Logger): Instance of the custom Logger class for internal logging.
+            tracer (opentelemetry.trace.Tracer): OpenTelemetry tracer for distributed tracing.
+            REQUEST_COUNT (prometheus_client.Counter): Tracks total number of requests.
+            LATENCY (prometheus_client.Histogram): Measures request latency in seconds.
+            MODEL_LOAD_TIME (prometheus_client.Histogram): Measures LLM model loading time.
+            MEMORY_USAGE (prometheus_client.Gauge): Monitors memory usage of the process in bytes.
+
+        Args:
+            log_level (int, optional): Logging level for the internal logger. Defaults to logging.INFO.
+        """
+        self.logger = Logger(name="metrics", level=log_level, id=self.id())
+        
         # Opentelemetry tracing
         self.tracer = self.init_tracing()
         
@@ -54,7 +82,7 @@ class RAGMetrics :
         self.MEMORY_USAGE = Gauge("chatbot_memory_usage_bytes", "Memory usage in bytes for chatbot process")
         
    
-    def init_tracing(self, service_name: str = "rag-pipeline-service", jaeger_url: str = "http://jaeger:14268/api/traces"):
+    def init_tracing(self, service_name: str = "rag-pipeline-service", jaeger_url: str = "http://jaeger:14268/api/traces") -> any:
         """Initialize OpenTelemetry tracing with Jaeger."""
         provider = TracerProvider(resource=Resource.create({SERVICE_NAME: service_name}))
         trace.set_tracer_provider(provider)
@@ -67,7 +95,7 @@ class RAGMetrics :
 
         return tracer 
 
-    def monitor_memory_usage(self, interval: int=5):
+    def monitor_memory_usage(self, interval: int=5) -> None:
         """Get memory usage of the LLM.
 
         Args:
@@ -81,7 +109,7 @@ class RAGMetrics :
                 self.logger.error(f"Memory monitoring error: {e}", exc_info=True)
             time.sleep(interval)
         
-    def track_request(self, func):
+    def track_request(self, func) -> None:
         """Decorator to track request count and latency, ignoring metric/tracing errors."""
         def wrapper(*args, **kwargs):
             start_time = time.time()
@@ -114,7 +142,7 @@ class RAGMetrics :
             return result
         return wrapper
     
-    def track_function(self, func):
+    def track_function(self, func) -> None:
         """Decorator to track request count and latency, ignoring metric/tracing errors."""
         def wrapper(*args, **kwargs):
             start_time = time.time()
