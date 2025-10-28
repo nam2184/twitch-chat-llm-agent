@@ -2,11 +2,12 @@ import os
 import logging
 from huggingface_hub import snapshot_download
 from transformers import AutoModelForCausalLM
-from utils import get_hardware, get_model_dir
+from util import Logger, RAGMetrics, get_hardware, get_model_dir
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-    
+logger = Logger(name="LLM")
+metrics = RAGMetrics()
+
+@metrics.track_request
 def load_model(model_name: str, local_dir: str) -> any:
     """Setup local LLM model for inference.
 
