@@ -7,10 +7,11 @@ from util import Logger, RAGMetrics, get_hardware, get_model_dir
 logger = Logger(name="LLM")
 
 class LLM:
-    def __init__(self):
-        self.logger = Logger(name="LLM", id=self.id())
-        self.metrics = RAGMetrics()
+    def __init__(self, logger : Logger = None, metrics : RAGMetrics = None):
+        self.logger = logger or Logger(name="LLM", id=self.id())
+        self.metrics = metrics or RAGMetrics()
         self.load_model = self.metrics.track_function(self.load_model)
+        self.model = None 
 
     def load_model(self, model_name: str, local_dir: str) -> any:
         """Setup local LLM model for inference.
