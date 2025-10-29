@@ -70,7 +70,7 @@ class RAGMetrics :
         Args:
             log_level (int, optional): Logging level for the internal logger. Defaults to logging.INFO.
         """
-        self.logger = Logger(name="metrics", level=log_level, id=self.id())
+        self.logger = Logger(name="metrics", level=log_level, id=id(self))
         
         # Opentelemetry tracing
         self.tracer = self.init_tracing()
