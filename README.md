@@ -11,7 +11,7 @@ Previous versions used retrievers to create qa pipelines, I intergrate with func
 This project implements a small-scale RAG system with:
 
 * **Document retrieval** using FAISS integrated with agent middleware prompts
-* **LLM agent** integration via LangChain 1.0.0+
+* **LLM agent per user** integration via LangChain 1.0.0+ using a hugging face pretrained model setup with a pipeline intergrating with an agent with context depenedent on user pdf upload 
 * **Context-aware response generation** using both user posted documents and pregenerated twitch chat documents
 * **Observability** via Prometheus, Grafana, OpenTelemetry, and Jaeger
 * **Lightweight, modular implementation** suitable for weaker CPU-based servers
@@ -25,6 +25,7 @@ The frontend lives in the `chat-bot` directory and is a **React Native (Expo + T
 ## Features
 
 * **FastAPI backend** with auto-generated OpenAPI schema
+* **Pretrained light Hugging Face model** uses a light pretrained hugging face model (Qwen2.5-0.5B) intergrated as a Langchain agent
 * **RAG agent** with vector store caching using FAISS
 * **PDF and in-memory document ingestion**
 * **Support for Twitch chat style retrieval and context injection**
