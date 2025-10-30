@@ -77,8 +77,8 @@ The frontend lives in the `chat-bot` directory and is a **React Native (Expo + T
 ### Installation
 
 ```bash
-git clone https://github.com/nam2184/tiny-rag-llm-agent.git
-cd tiny-rag-llm-agent
+git clone https://github.com/nam2184/twitch-chat-llm-agent.git
+cd twitch-chat-llm-agent
 docker compose -f 'docker-compose.yml' up -d --build
 ```
 
