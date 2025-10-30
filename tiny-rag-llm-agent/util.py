@@ -82,18 +82,49 @@ class RAGMetrics :
         self.MEMORY_USAGE = Gauge("chatbot_memory_usage_bytes", "Memory usage in bytes for chatbot process")
         
    
-    def init_tracing(self, service_name: str = "rag-pipeline-service", jaeger_url: str = "http://jaeger:14268/api/traces") -> any:
-        """Initialize OpenTelemetry tracing with Jaeger."""
-        provider = TracerProvider(resource=Resource.create({SERVICE_NAME: service_name}))
-        trace.set_tracer_provider(provider)
+    def init_tracing(
+        self,
+        service_name: str = "rag-pipeline-service",
+        jaeger_host_docker: str = "jaeger",
+        jaeger_port: int = 14268,
+    ):
+        """
+        Initialize OpenTelemetry tracing with Jaeger.
+        Automatically detects if running inside Docker and picks the correct host.
+        """
+        # Determine the correct host
+        if self._is_running_in_docker():
+            collector_host = jaeger_host_docker  # Docker network
+        else:
+            collector_host = "localhost"  # Host machine
 
+        collector_endpoint = f"http://{collector_host}:{jaeger_port}/api/traces"
+        print(f"[Tracing] Using Jaeger endpoint: {collector_endpoint}")
+
+        # Setup provider and tracer
+        provider = TracerProvider(resource=Resource.create({"service.name": service_name}))
+        trace.set_tracer_provider(provider)
         tracer = trace.get_tracer_provider().get_tracer(service_name, "0.1.0")
-        
-        jaeger_exporter = JaegerExporter(collector_endpoint=jaeger_url)
+
+        # Jaeger exporter
+        jaeger_exporter = JaegerExporter(collector_endpoint=collector_endpoint)
         span_processor = BatchSpanProcessor(jaeger_exporter)
         trace.get_tracer_provider().add_span_processor(span_processor)
 
-        return tracer 
+        self.tracer = tracer
+        return tracer
+
+    @staticmethod
+    def _is_running_in_docker() -> bool:
+        """Detect if we are running inside a Docker container."""
+        path = "/proc/self/cgroup"
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                for line in f:
+                    if "docker" in line or "kubepods" in line:
+                        return True
+        # Fallback: check environment variable set in Docker Compose
+        return os.getenv("DOCKER_CONTAINER", "0") == "1" 
 
     def monitor_memory_usage(self, interval: int=5) -> None:
         """Get memory usage of the LLM.
@@ -188,7 +219,7 @@ def get_root_dir() -> str:
     return project_root
     
 
-def get_model_dir(model_name: str = "Qwen/Qwen2.5-0.5B-Instruct") -> str:
+def get_model_dir(model_name: str = "Qwen\Qwen2.5-0.5B-Instruct") -> str:
     """Get directory of the saved LLM model
 
     Args:
@@ -198,7 +229,7 @@ def get_model_dir(model_name: str = "Qwen/Qwen2.5-0.5B-Instruct") -> str:
     Returns:
         str: _description_
     """
-    model_dir = os.path.join(get_root_dir(), "/tiny-rag-llm-agent/models/" + model_name)
+    model_dir = os.path.join(get_root_dir(), "tiny-rag-llm-agent", "models", model_name)
     return model_dir
         
 def secure_filename(filename: str) -> str:
