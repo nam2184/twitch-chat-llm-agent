@@ -36,35 +36,6 @@ export default defineConfig([
  
     ],
   },
-  {
-    root: ".",
-    input: {
-      path: "./he-schema.json",
-    },
-    output: {
-      path: "lib/kubb-he",
-      extension: {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ".ts": "" as any,
-      },
-      clean: true,
-      write: true,
-    },
-    plugins: [
-      pluginZod(),
-      pluginOas({}),
-      pluginTs({}),
-      pluginReactQuery({
-        client: {
-          importPath: "@/lib/authorized-client2",
-        },
-        suspense: {},
-      }),
-      pluginFaker({
-
-      }),
-    ],
-  }
   ]);
 
 

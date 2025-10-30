@@ -1,5 +1,5 @@
 {
-  "name": "fhe-chat",
+  "name": "chat-bot",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {

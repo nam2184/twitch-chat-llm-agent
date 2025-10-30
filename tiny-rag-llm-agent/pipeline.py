@@ -6,7 +6,7 @@ from langchain_core.vectorstores.base import VectorStoreRetriever
 from langchain_community.document_loaders.blob_loaders import Blob
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from util import RAGMetrics, Logger, get_hardware, get_root_dir, get_doc_dir, trace
+from util import RAGMetrics, Logger, get_hardware, get_root_dir, trace
 import time
 from fastapi import UploadFile, File
 
@@ -203,41 +203,7 @@ class RAG:
             
             return vector_store
         
-    def prepare_retriever_filepath(self, 
-        embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
-        file_path: str = None,
-        ) -> FAISS:
-        """Create a vector store retriever with the given embedding model.
-
-        Args:
-            embedding_model_name (str, optional): Embedding model that maps text to vectors.
-            Defaults to "sentence-transformers/all-MiniLM-L6-v2" (lightweight model).
-            
-            file_path (str, optional): File path to the PDF file. Defaults to None.
-
-        Returns:
-            VectorStoreRetriever: A retriever object.
-        """
-        with self.metrics.tracer.start_as_current_span("prepare_retriever") as prepare_retriever:
-            # Initialize embeddings
-            hardware = get_hardware()
-            with self.metrics.tracer.start_as_current_span("embeddings", links=[trace.Link(prepare_retriever.get_span_context())]):
-                embeddings = HuggingFaceEmbeddings(
-                    model_name=embedding_model_name,
-                    model_kwargs={"device": hardware}
-                    )
-            # Create text chunks
-            with self.metrics.tracer.start_as_current_span("chunks", links=[trace.Link(prepare_retriever.get_span_context())]):
-                chunks = self._read_pdf(get_doc_dir() if file_path is None else file_path)
-                
-            with self.metrics.tracer.start_as_current_span("vector_store", links=[trace.Link(prepare_retriever.get_span_context())]):
-                vector_store = self.get_vector_store(
-                    chunks=chunks,
-                    embeddings=embeddings,
-                    cache_dir=get_root_dir() + "tiny-rag-llm-agent/vector_store"
-                )
-            
-            return vector_store  
+      
 
 if __name__ == "__main__":
     retriever = RAG().prepare_retriever_file()

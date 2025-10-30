@@ -1,5 +1,5 @@
 services:
-  llm: 
+  tiny-rag-llm-agent: 
       build: 
         context: tiny-rag-llm-agent/
       env_file: .env
@@ -36,7 +36,7 @@ services:
     networks:
       - local-net
     depends_on:
-      - llm
+      - tiny-rag-llm-agent
 
   grafana:
     image: grafana/grafana:${GRAFANA_IMAGE_TAG}

@@ -81,8 +81,8 @@ def get_metadata():
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check(response: Response):
     """Check system health status."""
-    status = "healthy" if llm.llm_loaded else "unhealthy"
-    if not llm.llm_loaded:
+    status = "healthy" if llm.model_loaded else "unhealthy"
+    if not llm.model_loaded:
         response.status_code = 503
     return {"status": status}
 
@@ -95,7 +95,7 @@ async def health_check(response: Response):
 )
 async def upload_pdf(user_id: str, file: UploadFile = File(...)):
     with llm.metrics.tracer.start_as_current_span("upload_pdf") as upload_pdf:
-        if not llm.llm_loaded:
+        if not llm.model_loaded:
             raise HTTPException(503, "LLM is still loading. Please wait.")
         try:
             llm.logger.info(f"Updating retriever for user {user_id}...")
@@ -117,7 +117,7 @@ def chat_endpoint(user_id: str, request: ChatRequest):
     llm.metrics.REQUEST_COUNT.inc()
     start_time = time.time()
 
-    if not llm.llm_loaded:
+    if not llm.model_loaded:
         raise HTTPException(503, "LLM is still loading. Please wait.")
 
     qa_pipeline = llm.agents.get(user_id)
