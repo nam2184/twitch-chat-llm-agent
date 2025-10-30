@@ -2,6 +2,8 @@
 
 A lightweight **Retrieval-Augmented Generation (RAG) agent** that combines document retrieval with Large Language Models (LLMs) for context-aware and accurate responses. The system retrieves a document filled with 1MB of twitch chat response dataset, used as an attempt to simulate behavior of twitch chat. This system integrates monitoring, tracing, and observability tools such as Prometheus with Grafana UI and OpenTelemetry with Jaeger UI for production-ready deployments.
 
+Previous versions used retrievers to create qa pipelines, I intergrate with functional middleware for system context enrichment (also the fact that 1.0.0+ doesnt have langchain_classic.chains module properly implemented).
+
 ---
 
 ## Overview

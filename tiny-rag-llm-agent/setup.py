@@ -117,21 +117,37 @@ class LLMService:
                 )
                 return serialized
             
-            @dynamic_prompt 
+            @dynamic_prompt
             def prompt_with_twitch_chat(request: ModelRequest):
-                """Inject context into state messages."""
+                """Inject context into state messages and combine with the user query."""
+                # Get the latest user query
                 last_query = request.state["messages"][-1].text
-                retrieved_docs = vector_store_twitch.similarity_search(last_query)                
-                serialized = "\n\n".join(
-                    (f"Talk like a twitch chatter given twitch chat talks like this : {doc.page_content}")
-                    for doc in retrieved_docs
+
+                retrieved_docs = vector_store_twitch.similarity_search(last_query, k=3)
+
+                serialized_context = "\n".join(
+                    f"[Twitch chat snippet] {doc.page_content}" for doc in retrieved_docs
                 )
-                return serialized
+
+                # Combine context and query into a prompt for the LLM
+                prompt = f"""
+                You are a Twitch chatter assistant. Use the chat snippets below to answer the user's question in Twitch chatter style.
+
+                Chat context:
+                {serialized_context}
+
+                User question:
+                {last_query}
+
+                Answer as a Twitch user would.
+                """
+                return prompt
+
             
             return create_agent(model=chat_model, tools=[], middleware=[prompt_with_context, prompt_with_twitch_chat],)
 
 if __name__ == "__main__":
-    # We use Qwen2.5-0.5B-Instruct as our local LLM model (~1GB).
+    # Using Qwen2.5-0.5B-Instruct as our local LLM model (~1GB).
     # Link to download the model:
     # https://huggingface.co/collections/Qwen/qwen25-66e81a666513e518adb90d9e
     llm = LLMService()
@@ -142,7 +158,7 @@ if __name__ == "__main__":
         "What is the standard method for Task Decomposition?\n\n"
         "Once you get the answer, look up common extensions of that method."
     )
-    query = "What is task decomposition?"
+    query = "What is task decomposition? answer like a twitch chat user would."
     for step in agent.stream(
         {"messages": [{"role": "user", "content": query}]},
         stream_mode="values",

@@ -131,20 +131,19 @@ class RAG:
                     vector_store.save_local(user_cache_dir)
                     with open(hash_file, "w") as f:
                         f.write(current_hash)
+        else:
+            # No existing store: create new if chunks exist, otherwise empty FAISS
+            if not chunks:
+                chunks = ["placeholder text"]  # could also be something like str(time.time())
 
-            else:
-                # No existing store: create new if chunks exist, otherwise empty FAISS
-                if not chunks:
-                    chunks = ["placeholder text"]  # could also be something like str(time.time())
-    
-                vector_store = FAISS.from_texts(
-                        chunks,
-                        embedding=embeddings,
-                        metadatas=[{"timestamp": time.time()} for _ in chunks],
-                    )
-                vector_store.save_local(user_cache_dir)
-                with open(hash_file, "w") as f:
-                    f.write(current_hash)
+            vector_store = FAISS.from_texts(
+                    chunks,
+                    embedding=embeddings,
+                    metadatas=[{"timestamp": time.time()} for _ in chunks],
+                )
+            vector_store.save_local(user_cache_dir)
+            with open(hash_file, "w") as f:
+                f.write(current_hash)
 
         return vector_store
     
