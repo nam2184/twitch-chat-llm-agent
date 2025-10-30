@@ -57,13 +57,9 @@ export const fetchClient = async <
 
   if (!headers.has("Authorization")) {
     try {
-      const session = await fetchAuthSession();
-      if (session?.accessToken != null) {
-        headers.set(
-          "Authorization",
-          `Bearer ${session.accessToken.toString()}`,
+       headers.set(
+          "Authorization", ``
         );
-      }
     } catch {
       console.warn("No session could be loaded for API request.");
     }

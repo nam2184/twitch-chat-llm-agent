@@ -1,0 +1,1 @@
+{"properties":{"response":{"type":"string","title":"Response"}},"type":"object","required":["response"],"title":"ChatResponse","description":"Response from the local LLM.","x-readme-ref-name":"ChatResponse"}

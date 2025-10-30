@@ -27,4 +27,5 @@ EXPOSE 19001
 EXPOSE 19002
 
 # Default command
-CMD ["npm", "run", "start"]
+ENTRYPOINT ["sh", "-c"]
+CMD ["npm run generate && npm run start"]

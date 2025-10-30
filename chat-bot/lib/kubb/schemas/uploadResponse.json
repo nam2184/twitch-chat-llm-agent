@@ -1,0 +1,1 @@
+{"properties":{"message":{"type":"string","title":"Message"}},"type":"object","required":["message"],"title":"UploadResponse","description":"Response after uploading a PDF file.","x-readme-ref-name":"UploadResponse"}

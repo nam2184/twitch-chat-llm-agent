@@ -1,0 +1,1 @@
+{"properties":{"status":{"type":"string","title":"Status"}},"type":"object","required":["status"],"title":"HealthResponse","description":"Health check status.","x-readme-ref-name":"HealthResponse"}

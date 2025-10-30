@@ -1,147 +1,195 @@
-import React from "react";
-import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Stack, useRouter } from "expo-router";
-import { usePostAuth } from "@/lib/kubb";
-import { loadCredentials } from "@/hooks/use-auth";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
+import * as DocumentPicker from "expo-document-picker";
+import { useChatEndpointApiChatPost, useUploadPdfApiUploadPdfPost } from "@/lib/kubb"; // generated client
+import dayjs from "dayjs";
 
-const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  password: z.string().min(1, "Password is required"),
-});
+type ChatMessage = {
+  role: "user" | "assistant" | "system";
+  content: string;
+};
 
+export default function ConversationScreen() {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
 
-export default function Login() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = React.useState(false);
+  // kubb-generated hooks
+  const chatMutation = useChatEndpointApiChatPost();
+  const uploadPdfMutation = useUploadPdfApiUploadPdfPost();
 
-  const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { username: "", password: "" },
-  });
+  useEffect(() => {
+    // Auto-scroll to bottom when a new message arrives
+    flatListRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
 
-  const postAuthMutation = usePostAuth();
-  const onSubmit = React.useCallback(
-      async ({ username, password }: z.infer<typeof loginSchema>) => {
-        try {
-          setIsLoading(true);
-          const response = await postAuthMutation.mutateAsync({ 
-            data : {
-              username: username,
-              password: password,
-            }
-          });
-          console.log(response)
-          await loadCredentials(response);
-          setIsLoading(false);
-        } catch (e: unknown) {
-            if (e instanceof Error) {
-              form.setError("root", {
-                message: e.message,
-              });
-          }
-        } finally {
-          setIsLoading(false);
-        }
-        },
-      [form, postAuthMutation],
-  );
-  React.useEffect(() => {
-    if (postAuthMutation.data?.user) {
-      router.replace("/(tabs)");
+  const sendMessage = async () => {
+    const content = text.trim();
+    if (!content) return;
+
+    const userMsg: ChatMessage = { role: "user", content };
+    setMessages((prev) => [...prev, userMsg]);
+    setText("");
+    setLoading(true);
+
+    try {
+      const body = { messages: [...messages, userMsg] };
+      const response = await chatMutation.mutateAsync({ data: body });
+
+      const botMsg: ChatMessage = {
+        role: "assistant",
+        content: response.response,
+      };
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (err) {
+      console.error("Chat error:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [router, postAuthMutation]);
-  return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ title: "Login" }} />
+  };
 
-      {/* Username field */}
-      <Controller
-        control={form.control}
-        name="username"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
-            value={value}
-            onChangeText={onChange}
-            autoCapitalize="none"
-          />
-        )}
-      />
-      {/* Password field */}
-      <Controller
-        control={form.control}
-        name="password"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            value={value}
-            onChangeText={onChange}
-            secureTextEntry
-          />
-        )}
-      />
+  const handleUploadPdf = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf",
+      });
+      if (result.canceled || !result.assets.length) return;
 
-      {/* Root error */}
-      {form.formState.errors.root && (
-        <Text style={styles.error}>{form.formState.errors.root.message}</Text>
-      )}
-      {/* Submit button */}
-      {isLoading ? (
-        <ActivityIndicator size="large" />
-      ) : (
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={form.handleSubmit(onSubmit)} 
-        disabled={isLoading} // prevent double taps
+      const file = result.assets[0];
+      const formData = new FormData();
+      formData.append("file", {
+        uri: file.uri,
+        type: "application/pdf",
+        name: file.name,
+      } as any);
+
+      const uploadRes = await uploadPdfMutation.mutateAsync({ data: formData });
+      const systemMsg: ChatMessage = {
+        role: "system",
+        content: uploadRes.message || "PDF uploaded successfully.",
+      };
+      setMessages((prev) => [...prev, systemMsg]);
+    } catch (err) {
+      console.error("PDF upload failed:", err);
+    }
+  };
+
+  const renderMessage = ({ item }: { item: ChatMessage }) => {
+    const isUser = item.role === "user";
+    const bgColor = isUser ? "#DCF8C6" : item.role === "assistant" ? "#E5E5EA" : "#F1F0F0";
+
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: isUser ? "flex-end" : "flex-start",
+          paddingHorizontal: 10,
+          marginVertical: 4,
+        }}
       >
-        <Text style={styles.buttonText}>
-          {isLoading ? "Logging in..." : "Login"}
-        </Text>
-      </TouchableOpacity>      
-      )}
-    </View>
+        <View
+          style={{
+            maxWidth: "80%",
+            backgroundColor: bgColor,
+            padding: 10,
+            borderRadius: 10,
+          }}
+        >
+          <Text style={{ fontSize: 15 }}>{item.content}</Text>
+          <Text
+            style={{
+              fontSize: 10,
+              color: "#666",
+              marginTop: 4,
+              textAlign: isUser ? "right" : "left",
+            }}
+          >
+            {dayjs().format("HH:mm")}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: "black" }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
+      <View style={{ flex: 1 }}>
+        {/* Messages */}
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(_, idx) => idx.toString()}
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: messages.length === 0 ? "flex-end" : "flex-start",
+            backgroundColor: "white",
+          }}
+        />
+
+        {/* Input Bar */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            borderTopWidth: 1,
+            borderColor: "#ccc",
+            backgroundColor: "#fff",
+            paddingHorizontal: 10,
+            paddingVertical: 8,
+          }}
+        >
+          <TouchableOpacity onPress={handleUploadPdf} style={{ marginRight: 10 }}>
+            <Text style={{ fontSize: 22 }}>📄</Text>
+          </TouchableOpacity>
+
+          <TextInput
+            value={text}
+            onChangeText={setText}
+            placeholder="Type a message..."
+            style={{
+              flex: 1,
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              backgroundColor: "#f1f1f1",
+              borderRadius: 20,
+              fontSize: 16,
+            }}
+          />
+
+          <TouchableOpacity
+            onPress={sendMessage}
+            style={{
+              marginLeft: 8,
+              backgroundColor: "#007AFF",
+              borderRadius: 20,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+            }}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={{ color: "white", fontWeight: "bold" }}>Send</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 12,
-    marginBottom: 10,
-    borderRadius: 8,
-    color: "white", 
-  },
-  inputFocused: {
-    borderWidth: 2, 
-    borderColor: "#000", 
-  },
-  error: {
-    color: "red",
-    marginBottom: 10,
-  },
-  button: {
-    backgroundColor: "white",
-    padding: 15,
-    borderRadius: 30,
-    alignItems: "center",
-    width: "60%",        
-    alignSelf: "center",
-    marginTop: 80,
-  },
-  buttonText: {
-    color: "black",
-    fontWeight: "bold",
-  },
-});
-
