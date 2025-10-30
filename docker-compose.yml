@@ -1,0 +1,75 @@
+services:
+  llm: 
+      build: 
+        context: tiny-rag-llm-agent/
+      env_file: .env
+      image: "${RAG_IMAGE_NAME}:${RAG_IMAGE_TAG}"
+      container_name: "${RAG_CONTAINER_NAME}"
+      ports:
+        - "${RAG_PORT}:${RAG_PORT}"
+      volumes:
+        - ./tiny-rag-llm-agent/models:/tiny-rag-llm-agent/models
+        - ./tiny-rag-llm-agent/vector_store:/tiny-rag-llm-agent/vector_store
+      networks:
+        - local-net
+      environment:
+        - OTEL_EXPORTER_OTLP_ENDPOINT="${OTEL_EXPORTER_OTLP_ENDPOINT}"
+        - OTEL_SERVICE_NAME="${RAG_CONTAINER_NAME}"
+        - OTEL_TRACES_EXPORTER="${OTEL_TRACES_EXPORTER}"
+        - OTEL_METRICS_EXPORTER=none
+      healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+        interval: 20s
+        timeout: 10s
+        retries: 25
+        start_period: 60s
+      depends_on:
+        - jaeger
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_IMAGE_TAG}
+    env_file: .env
+    container_name: ${PROMETHEUS_CONTAINER_NAME}
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "${PROMETHEUS_PORT}:${PROMETHEUS_PORT}"
+    networks:
+      - local-net
+    depends_on:
+      - llm
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_IMAGE_TAG}
+    env_file: .env
+    container_name: ${GRAFANA_CONTAINER_NAME}
+    ports:
+      - "${GRAFANA_PORT}:${GRAFANA_PORT}"
+    networks:
+      - local-net
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+
+  jaeger:
+    image: jaegertracing/all-in-one:${JAEGER_IMAGE_TAG}
+    env_file: .env
+    container_name: "${JAEGER_CONTAINER_NAME}"
+    ports:
+      - "${JAEGER_PORT}:${JAEGER_PORT}"
+      - "${JAEGER_PORT_UDP}:${JAEGER_PORT_UDP}/udp"
+      - "${JAEGER_COLLECTOR_PORT}:${JAEGER_COLLECTOR_PORT}"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=${COLLECTOR_ZIPKIN_HOST_PORT}
+      - USE_OPENMP=1
+      - OMP_NUM_THREADS=1
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - local-net
+
+networks:
+  local-net:
+
+volumes:
+  grafana-data:

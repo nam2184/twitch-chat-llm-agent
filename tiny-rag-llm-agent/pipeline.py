@@ -7,7 +7,6 @@ from langchain_community.document_loaders.blob_loaders import Blob
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from util import RAGMetrics, Logger, get_hardware, get_root_dir, get_doc_dir, trace
-from constants import SearchKwargs, SearchType
 import time
 from fastapi import UploadFile, File
 
@@ -83,7 +82,7 @@ class RAG:
         chunks: list,
         embeddings: HuggingFaceEmbeddings,
         cache_dir: str,
-        user_id: int
+        user_id: int = 0
     ) -> FAISS:
         """Retrieve or create a FAISS vector store for a user, even if no chunks are provided.
 
@@ -170,7 +169,7 @@ class RAG:
         embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
         file: UploadFile = None,
         user_id: int = None
-        ) -> VectorStoreRetriever:
+        ) -> FAISS:
         """Create a vector store retriever with the given embedding model.
 
         Args:
@@ -180,7 +179,7 @@ class RAG:
             file (UploadFile, optional): File object. Defaults to File initialized object.
 
         Returns:
-            VectorStoreRetriever: A retriever object.
+            FAISS: A FAISS vector store object.
         """
         with self.metrics.tracer.start_as_current_span("prepare_retriever") as prepare_retriever:
             # Initialize embeddings
@@ -198,25 +197,16 @@ class RAG:
                 vector_store = self.get_vector_store(
                     chunks=chunks,
                     embeddings=embeddings,
-                    cache_dir=get_root_dir() + "/llm/vector_store",
+                    cache_dir=get_root_dir() + "tiny-rag-llm-agent/vector_store",
                     user_id=user_id
                 )
             
-            # Create a retriever
-            with self.metrics.tracer.start_as_current_span("retriever", links=[trace.Link(prepare_retriever.get_span_context())]):
-                retriever = vector_store.as_retriever(
-                    search_type=SearchType.SIMILARITY.value,
-                    search_kwargs={
-                        SearchKwargs.K.value: 2,
-                    }
-                )
-            
-            return retriever
+            return vector_store
         
     def prepare_retriever_filepath(self, 
         embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
         file_path: str = None,
-        ) -> VectorStoreRetriever:
+        ) -> FAISS:
         """Create a vector store retriever with the given embedding model.
 
         Args:
@@ -244,19 +234,10 @@ class RAG:
                 vector_store = self.get_vector_store(
                     chunks=chunks,
                     embeddings=embeddings,
-                    cache_dir=get_root_dir() + "llm/vector_store"
+                    cache_dir=get_root_dir() + "tiny-rag-llm-agent/vector_store"
                 )
             
-            # Create a retriever
-            with self.metrics.tracer.start_as_current_span("retriever", links=[trace.Link(prepare_retriever.get_span_context())]):
-                retriever = vector_store.as_retriever(
-                    search_type=SearchType.SIMILARITY,
-                    search_kwargs={
-                        SearchKwargs.K: 2,
-                    }
-                )
-            
-            return retriever
+            return vector_store  
 
 if __name__ == "__main__":
     retriever = RAG().prepare_retriever_file()

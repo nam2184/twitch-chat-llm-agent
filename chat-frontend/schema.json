@@ -1,0 +1,1036 @@
+{
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "properties": {
+          "code": {
+            "type": "integer"
+          },
+          "error": {
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "section": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "type": {
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "GetChats": {
+        "properties": {
+          "chats": {
+            "items": {
+              "properties": {
+                "created_at": {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "id": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "last_message_time": {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "seen": {
+                  "type": "boolean"
+                },
+                "updated_at": {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "user1_id": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "user2_id": {
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "users": {
+            "items": {
+              "properties": {
+                "created_at": {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "id": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "surname": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "GetEvaluationKey": {
+        "properties": {
+          "chat_id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "file": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GetMessages": {
+        "properties": {
+          "array": {
+            "items": {
+              "properties": {
+                "chat_id": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "classification_result": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "id": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "image": {
+                  "type": "string"
+                },
+                "is_typing": {
+                  "type": "boolean"
+                },
+                "iv": {
+                  "type": "string"
+                },
+                "receiver_id": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "sender_id": {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "sender_name": {
+                  "type": "string"
+                },
+                "timestamp": {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "properties": {
+              "total": {
+                "nullable": true,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "GetRefreshAuthResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "exp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "user": {
+            "properties": {
+              "created_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "first_name": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "surname": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "GetUser": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "surname": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GetUsers": {
+        "properties": {
+          "array": {
+            "items": {
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "id": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "surname": {
+                  "type": "string"
+                },
+                "username": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "meta": {
+            "properties": {
+              "total": {
+                "nullable": true,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "InferenceEvent": {
+        "properties": {
+          "chat_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "classification_result": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "finished": {
+            "type": "boolean"
+          },
+          "id": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "image": {
+            "type": "string"
+          },
+          "image_to_classify": {
+            "type": "string"
+          },
+          "is_typing": {
+            "type": "boolean"
+          },
+          "iv": {
+            "type": "string"
+          },
+          "receiver_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sender_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sender_name": {
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Message": {
+        "properties": {
+          "chat_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "classification_result": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "id": {
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "image": {
+            "type": "string"
+          },
+          "image_to_classify": {
+            "type": "string"
+          },
+          "is_typing": {
+            "type": "boolean"
+          },
+          "iv": {
+            "type": "string"
+          },
+          "receiver_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sender_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "sender_name": {
+            "type": "string"
+          },
+          "timestamp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PostAuth": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PostAuthResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "exp": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "user": {
+            "properties": {
+              "created_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "first_name": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "surname": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "PostAuthSignUp": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "surname": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PostChats": {
+        "properties": {
+          "user1_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "user2_id": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PostChatsResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "last_message_time": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "seen": {
+            "type": "boolean"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "user1_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "user2_id": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PostEvaluationKey": {
+        "properties": {
+          "chat_id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "file": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PostEvaluationKeyBody": {
+        "properties": {
+          "chat_id": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "file": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PostSignUpResponse": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "surname": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Dem API",
+    "version": "0.1"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth": {
+      "post": {
+        "operationId": "PostAuth",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostAuth"
+              }
+            }
+          },
+          "description": "Authentication",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostAuthResponse"
+                }
+              }
+            },
+            "description": "Authentication success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Authenticate user and return tokens"
+      }
+    },
+    "/auth/refresh": {
+      "get": {
+        "operationId": "GetRefreshToken",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetRefreshAuthResponse"
+                }
+              }
+            },
+            "description": "Refresh Authentication success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Refresh access token"
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "operationId": "PostAuthSignUp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostAuthSignUp"
+              }
+            }
+          },
+          "description": "Authentication Sign Up",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostSignUpResponse"
+                }
+              }
+            },
+            "description": "Create account success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Create new account"
+      }
+    },
+    "/chats": {
+      "get": {
+        "operationId": "GetChats",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetChats"
+                }
+              }
+            },
+            "description": "Chats retrieved"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Get chat list"
+      },
+      "post": {
+        "operationId": "PostChats",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostChats"
+              }
+            }
+          },
+          "description": "Chats Created",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostChatsResponse"
+                }
+              }
+            },
+            "description": "Chats Created success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Post chat"
+      }
+    },
+    "/evaluation-key": {
+      "get": {
+        "operationId": "GetEvaluationKey",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetEvaluationKey"
+                }
+              }
+            },
+            "description": "Get eval key success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Get evaluation key from model service"
+      },
+      "post": {
+        "operationId": "PostEvaluationKey",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostEvaluationKeyBody"
+              }
+            }
+          },
+          "description": "Send evaluation key to model service body",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostEvaluationKey"
+                }
+              }
+            },
+            "description": "Send eval key success"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Sende evaluation key to model service"
+      }
+    },
+    "/messages/{chatID}": {
+      "get": {
+        "operationId": "GetMessages",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "chatID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "skip",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order_by",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_by",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMessages"
+                }
+              }
+            },
+            "description": "Messages retrieved"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Get messages for a chat"
+      }
+    },
+    "/messages/{chatID}/count": {
+      "get": {
+        "operationId": "GetMessagesCount",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "chatID",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "skip",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            },
+            "description": "Count retrieved"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Get message count"
+      }
+    },
+    "/user": {
+      "get": {
+        "operationId": "GetUser",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUser"
+                }
+              }
+            },
+            "description": "User retrieved"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Get current user info"
+      }
+    },
+    "/users": {
+      "get": {
+        "operationId": "GetUsers",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skip",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order_by",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_by",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetUsers"
+                }
+              }
+            },
+            "description": "Users retrieved"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Failure"
+          },
+          "default": {
+            "description": ""
+          }
+        },
+        "summary": "Get users not in chat"
+      }
+    }
+  },
+  "servers": [
+    {
+      "description": " Server",
+      "url": "https://khanhmychattypi.win/api/v1"
+    },
+    {
+      "description": "Local Test Server",
+      "url": "http://localhost:8000/api/v1"
+    }
+  ]
+}

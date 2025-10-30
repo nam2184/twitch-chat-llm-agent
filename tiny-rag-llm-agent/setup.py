@@ -13,6 +13,7 @@ from transformers import AutoTokenizer, pipeline
 from pipeline import RAG
 from fastapi import UploadFile, File
 import asyncio
+from langchain.tools import tool
 
 class LLMService:
     def __init__(self, logger : Logger = None, metrics : RAGMetrics = None):
@@ -20,8 +21,9 @@ class LLMService:
         self.metrics = metrics or RAGMetrics()
         self.load_model = self.metrics.track_function(self.load_model)
         self.model = None
+        self.model_loaded = False
         self.RAG = RAG(self.logger, self.metrics)
-        self.Agents = {} 
+        self.agents = {} 
     
     async def setup_pipeline_for_user(self, user_id: str, file: UploadFile = None):
         """Setup a RAG chain for a specific user.
@@ -31,7 +33,7 @@ class LLMService:
             file_path (str): File path to the PDF file.
         """
         if user_id not in self.Agents:
-            self.Agents[user_id] = await self.setup_pipeline(
+            self.agents[user_id] = await self.setup_pipeline(
                 local_dir=get_model_dir(),
                 file=file,
                 model=self.model,
@@ -41,7 +43,7 @@ class LLMService:
         else:
             self.logger.info(f"QA chain already exists for user {user_id}, skipping setup.")
 
-    def load_model(self, model_name: str, local_dir: str) -> any:
+    def load_model(self, model_name: str, local_dir: str):
         """Setup local LLM model for inference.
 
         Args:
@@ -62,12 +64,11 @@ class LLMService:
         hardware = get_hardware()
         
         self.logger.info(f"Loading model from {local_dir} on {hardware}...")
-        model = AutoModelForCausalLM.from_pretrained(
+        self.model = AutoModelForCausalLM.from_pretrained(
             pretrained_model_name_or_path=local_dir,
             device_map=hardware
             )   
-
-        return model
+        self.model_loaded = True
     
     async def setup_pipeline(self, local_dir: str, file: UploadFile = None, model: PreTrainedModel = None, user_id: str = None) -> any:
         """Setup a QA chain with RAG model.
@@ -91,7 +92,7 @@ class LLMService:
                 )
             
             with self.metrics.tracer.start_as_current_span("prepare_retriever", links=[trace.Link(setup_pipeline.get_span_context())]):
-                retriever = await self.RAG.prepare_retriever_file(file=file, user_id=user_id)
+                vector_store = await self.RAG.prepare_retriever_file(file=file, user_id=user_id)
             
             # Setup a RAG pipeline
             pipe = pipeline(
@@ -105,23 +106,25 @@ class LLMService:
             # Wrap the HuggingFace pipeline in a LangChain object
             local_llm = HuggingFacePipeline(pipeline=pipe)
             chat_model = ChatHuggingFace(llm=local_llm) 
-            # Define the prompt template
-            prompt_template = """Answer based on context:\n{context}\nQuestion: {question}\nAnswer:"""
-            prompt = PromptTemplate(
-                input_variables=["context", "question"],
-                template=prompt_template
-            )
-            retriever_tool = create_retriever_tool(
-                retriever,
-                "retrieve user pdfs",
-                "Search and return information user pdfs",
-                document_prompt=prompt,
-            )
-
+            
+            @tool(response_format="content_and_artifact")
+            def prompt_with_context(query: str):
+                """Inject context into state messages."""
+                retrieved_docs = vector_store.similarity_search(query, k=2)
+                serialized = "\n\n".join(
+                    (f"Source: {doc.metadata}\nContent: {doc.page_content}")
+                    for doc in retrieved_docs
+                )
+                return serialized, retrieved_docs
+            prompt = (
+                "You have access to a tool that retrieves context from a pdf file. "
+                "Use the tool to help answer user queries."
+            ) 
             return create_agent(
-                tools=[retriever_tool],
+                tools=[prompt_with_context],
                 model=chat_model,
                 name="twitch-llm-agent",
+                system_prompt=prompt
             )
 
 
@@ -130,18 +133,16 @@ if __name__ == "__main__":
     # Link to download the model:
     # https://huggingface.co/collections/Qwen/qwen25-66e81a666513e518adb90d9e
     llm = LLMService()
-    model = llm.load_model(
-        model_name="Qwen/Qwen2.5-0.5B-Instruct", 
-        local_dir=get_model_dir()
-    )
     agent = asyncio.run(llm.setup_pipeline(
         local_dir=get_model_dir(),
-        model=model
     ))
-    result = agent.invoke(
-        {"messages": [{"role": "user", "content": "Explain machine learning"}]},
-        context={"user_role": "expert"}
+    query = (
+        "What is the standard method for Task Decomposition?\n\n"
+        "Once you get the answer, look up common extensions of that method."
     )
-    print(result)
-    print("model:", model)
-    print("Model loaded successfully!")
+
+    for event in agent.stream(
+        {"messages": [{"role": "user", "content": query}]},
+        stream_mode="values",
+    ):
+        event["messages"][-1].pretty_print()

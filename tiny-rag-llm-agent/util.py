@@ -183,7 +183,7 @@ def get_root_dir() -> str:
     """
     project_root = os.getenv(
         "PROJECT_ROOT", 
-        os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
         )
     return project_root
     
@@ -198,14 +198,8 @@ def get_model_dir(model_name: str = "Qwen/Qwen2.5-0.5B-Instruct") -> str:
     Returns:
         str: _description_
     """
-    model_dir = os.path.join(get_root_dir(), "rag-pipeline/models/" + model_name)
+    model_dir = os.path.join(get_root_dir(), "/tiny-rag-llm-agent/models/" + model_name)
     return model_dir
-
-def get_doc_dir() -> str:
-    """Get directory of the input PDF document.
-    """
-    doc_dir = os.path.join(get_root_dir(), "rag-pipeline/examples/example.pdf")
-    return doc_dir
         
 def secure_filename(filename: str) -> str:
     """Secure filename sanitizer

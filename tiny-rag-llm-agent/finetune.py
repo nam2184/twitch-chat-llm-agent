@@ -10,28 +10,37 @@ load_dotenv()
 
 def twitch_finetune_qwen(output_dir="./twitchtuned_qwen", epochs=2, lr=2e-5):
     """
-    Fine-tune Qwen2.5-0.5B on a small dataset.
-
-    Args:
-        model: Pre-loaded Qwen model (AutoModelForCausalLM)
-        tokenizer: Matching tokenizer (AutoTokenizer)
-        data: list of dicts, each like {"input": "question", "output": "answer"}
-        output_dir: where to save fine-tuned weights
-        epochs: number of training epochs
-        lr: learning rate
-
-    Returns:
-        Trained model and tokenizer
+    Fine-tune Qwen2.5-0.5B on Twitch chat messages dataset.
     """
-    llm = LLMService()
-    model = llm.load_model(
-        model_name="Qwen/Qwen2.5-0.5B-Instruct", 
-        local_dir=get_model_dir()
+
+    model_name = "Qwen/Qwen2.5-0.5B-Instruct"
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name)
+
+    dataset = load_dataset("lparkourer10/twitch_chat")
+    print("Dataset columns:", dataset["train"].column_names)
+
+    def tokenize_fn(examples):
+        # Clean message text
+        texts = [m if m and isinstance(m, str) else "" for m in examples["Message"]]
+        encodings = tokenizer(
+            texts,
+            truncation=True,
+            padding="max_length",
+            max_length=256,
+        )
+        # labels = input_ids copy for causal LM
+        encodings["labels"] = encodings["input_ids"].copy()
+        return encodings
+
+    tokenized_dataset = dataset.map(
+        tokenize_fn,
+        batched=True,
+        remove_columns=dataset["train"].column_names,  # remove old 'Message'
+        desc="Tokenizing dataset",
     )
-    tokenizer = AutoTokenizer.from_pretrained(get_model_dir())
-    
-    dataset = load_dataset("lparkourer10/twitch_chat")["train"]
-    
+
+    # --- Training setup ---
     training_args = TrainingArguments(
         output_dir=output_dir,
         per_device_train_batch_size=2,
@@ -40,25 +49,20 @@ def twitch_finetune_qwen(output_dir="./twitchtuned_qwen", epochs=2, lr=2e-5):
         warmup_steps=50,
         logging_steps=10,
         save_strategy="epoch",
-        bf16=torch.cuda.is_available(),  # Use bf16 if available
+        bf16=torch.cuda.is_available(),
         report_to="none",
         optim="adamw_torch",
+        remove_unused_columns=False,  # keep all inputs for Trainer
     )
-    
+
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
     trainer = Trainer(
         model=model,
         args=training_args,
         data_collator=data_collator,
-        train_dataset=dataset,
-    )
-
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        data_collator=data_collator,
-        train_dataset=dataset,
+        train_dataset=tokenized_dataset["train"],
+        eval_dataset=tokenized_dataset["validation"],
         tokenizer=tokenizer,
     )
 
@@ -67,6 +71,7 @@ def twitch_finetune_qwen(output_dir="./twitchtuned_qwen", epochs=2, lr=2e-5):
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
 
+    print(f"Fine-tuning complete. Model saved to {output_dir}")
     return model, tokenizer
 
 def upload_to_hf(model_dir, repo_name, private=True):

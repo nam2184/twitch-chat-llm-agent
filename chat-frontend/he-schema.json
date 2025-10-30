@@ -1,0 +1,481 @@
+{
+  "paths": {
+    "/client/{chat_id}": {
+      "get": {
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorType"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "$ref": "#/components/responses/DEFAULT_ERROR"
+          }
+        },
+        "tags": [
+          "client"
+        ],
+        "description": "Generate client configs for FHE."
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "chat_id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      ]
+    },
+    "/normal_keys/{chat_id}": {
+      "get": {
+        "responses": {
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorType"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK"
+          },
+          "default": {
+            "$ref": "#/components/responses/DEFAULT_ERROR"
+          }
+        },
+        "tags": [
+          "client"
+        ],
+        "description": "Encrypt image using FHE."
+      },
+      "parameters": [
+        {
+          "in": "path",
+          "name": "chat_id",
+          "required": true,
+          "schema": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      ]
+    },
+    "/encrypt": {
+      "post": {
+        "responses": {
+          "422": {
+            "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorType"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EncryptedMessage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DEFAULT_ERROR"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EncryptMessageBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "client"
+        ],
+        "description": "Encrypt image using FHE."
+      }
+    },
+    "/decrypt": {
+      "post": {
+        "responses": {
+          "422": {
+            "$ref": "#/components/responses/UNPROCESSABLE_ENTITY"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorType"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecryptedMessage"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/DEFAULT_ERROR"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecryptMessageBody"
+              }
+            }
+          }
+        },
+        "tags": [
+          "client"
+        ],
+        "description": "Decrypt encrypted image using FHE."
+      }
+    }
+  },
+  "info": {
+    "title": "Client Encryption API",
+    "version": "1.0"
+  },
+  "tags": [
+    {
+      "name": "client",
+      "description": "Client Endpoints"
+    }
+  ],
+  "openapi": "3.0.0",
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "Error code"
+          },
+          "status": {
+            "type": "string",
+            "description": "Error name"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "errors": {
+            "type": "object",
+            "description": "Errors",
+            "additionalProperties": {}
+          }
+        },
+        "additionalProperties": false
+      },
+      "PaginationMetadata": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "total_pages": {
+            "type": "integer"
+          },
+          "first_page": {
+            "type": "integer"
+          },
+          "last_page": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "previous_page": {
+            "type": "integer"
+          },
+          "next_page": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ErrorType": {
+        "type": "object",
+        "properties": {
+          "section": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "section"
+        ],
+        "additionalProperties": false
+      },
+      "EncryptMessageBody": {
+        "type": "object",
+        "properties": {
+          "chat_id": {
+            "type": "integer"
+          },
+          "sender_id": {
+            "type": "integer"
+          },
+          "sender_name": {
+            "type": "string"
+          },
+          "receiver_id": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "is_typing": {
+            "type": "boolean"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "classification_result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "chat_id",
+          "content",
+          "receiver_id",
+          "sender_id",
+          "sender_name",
+          "timestamp",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "EncryptedMessage": {
+        "type": "object",
+        "properties": {
+          "chat_id": {
+            "type": "integer"
+          },
+          "sender_id": {
+            "type": "integer"
+          },
+          "sender_name": {
+            "type": "string"
+          },
+          "receiver_id": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "string"
+          },
+          "iv": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "image_to_classify": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "is_typing": {
+            "type": "boolean"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "classification_result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "chat_id",
+          "content",
+          "receiver_id",
+          "sender_id",
+          "sender_name",
+          "timestamp",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "DecryptMessageBody": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "chat_id": {
+            "type": "integer"
+          },
+          "sender_id": {
+            "type": "integer"
+          },
+          "sender_name": {
+            "type": "string"
+          },
+          "receiver_id": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "image_to_classify": {
+            "type": "string"
+          },
+          "iv": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "is_typing": {
+            "type": "boolean"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "classification_result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "chat_id",
+          "content",
+          "id",
+          "receiver_id",
+          "sender_id",
+          "sender_name",
+          "timestamp",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "DecryptedMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "chat_id": {
+            "type": "integer"
+          },
+          "sender_id": {
+            "type": "integer"
+          },
+          "sender_name": {
+            "type": "string"
+          },
+          "receiver_id": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "iv": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "is_typing": {
+            "type": "boolean"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "classification_result": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "chat_id",
+          "classification_result",
+          "content",
+          "id",
+          "receiver_id",
+          "sender_id",
+          "sender_name",
+          "timestamp",
+          "type"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "responses": {
+      "DEFAULT_ERROR": {
+        "description": "Default error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "UNPROCESSABLE_ENTITY": {
+        "description": "Unprocessable Entity",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

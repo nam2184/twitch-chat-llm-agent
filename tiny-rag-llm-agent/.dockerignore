@@ -1,0 +1,8 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.tmp
+models
+vector_store
