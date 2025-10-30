@@ -79,7 +79,7 @@ The frontend lives in the `chat-bot` directory and is a **React Native (Expo + T
 ```bash
 git clone https://github.com/nam2184/tiny-rag-llm-agent.git
 cd tiny-rag-llm-agent
-compose -f 'docker-compose.yml' up -d --build
+docker compose -f 'docker-compose.yml' up -d --build
 ```
 
 * Backend models and vector stores are persisted in `tiny-rag-llm-agent/models` and `tiny-rag-llm-agent/vector_store`.
